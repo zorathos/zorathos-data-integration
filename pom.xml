@@ -168,6 +168,31 @@
             <version>${flink-shaded-jackson.version}</version>
         </dependency>
 
+        <!-- Flink连接器 -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-base</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-files</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka</artifactId>
+            <version>${kafka-flink-connector.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-jdbc</artifactId>
+            <version>${flink-connector-jdbc.version}</version>
+        </dependency>
+
         <!-- MySQL连接器 -->
         <dependency>
             <groupId>com.mysql</groupId>
