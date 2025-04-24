@@ -1,14 +1,30 @@
 package org.datacenter.task.simulation;
 
+import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.datacenter.config.HumanMachineConfig;
 import org.datacenter.util.DataIntegrationUtil;
 
 public class SimpleSimulationIntegration {
+
+    /**
+     * TODO
+     * 1. 修改数据源和整合源至与数据模型匹配
+     * 2. 修改数据源配置引入配置化参数 参考org.datacenter.receiver.equipment.EquipmentCodeCdcReceiver
+     * 3. 修改insertSql至与数据源匹配
+     */
+
     public static void main(String[] args) {
         HumanMachineConfig config = new HumanMachineConfig();
         config.loadConfig();
+
+        // 在创建表环境前设置运行模式
+        StreamExecutionEnvironment env = DataIntegrationUtil.prepareStreamEnv();
+        env.setParallelism(1);
+        env.setRuntimeMode(RuntimeExecutionMode.BATCH);
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
         String agRtsnSrc = """
                     CREATE TABLE ag_rtsn_src (
                     sortie_number                     STRING,
@@ -50,7 +66,8 @@ public class SimpleSimulationIntegration {
                     direction_validity                STRING
                 ) WITH (
                     'connector' = 'jdbc',
-                    'url'       = 'jdbc:mysql://10.68.10.38:4000/simulation',
+                    'url'       = 'jdbc:mysql://10.68.20.38:4000/simulation',
+                    'driver' = 'com.mysql.cj.jdbc.Driver',
                     'table-name'= 'ag_rtsn',
                     'username'  = '%s',
                     'password'  = '%s'
@@ -91,7 +108,8 @@ public class SimpleSimulationIntegration {
                 missile_target_distance     STRING
                 ) WITH (
                     'connector' = 'jdbc',
-                    'url'       = 'jdbc:mysql://10.68.10.38:4000/simulation',
+                    'url'       = 'jdbc:mysql://10.68.20.38:4000/simulation',
+                    'driver' = 'com.mysql.cj.jdbc.Driver',
                     'table-name'= 'aa_traj',
                     'username'  = '%s',
                     'password'  = '%s'
@@ -115,7 +133,8 @@ public class SimpleSimulationIntegration {
                     PRIMARY KEY (sortie_number, event_ts) NOT ENFORCED
                 ) WITH (
                     'connector' = 'jdbc',
-                    'url'       = 'jdbc:mysql://10.68.10.38:4000/simulation_integration',
+                    'url'       = 'jdbc:mysql://10.68.20.38:4000/simulation_integration',
+                    'driver' = 'com.mysql.cj.jdbc.Driver',
                     'table-name'= 'merged_flight',
                     'username'  = '%s',
                     'password'  = '%s'
@@ -125,9 +144,6 @@ public class SimpleSimulationIntegration {
                 "Lab418Server!"
         );
 
-        StreamExecutionEnvironment env = DataIntegrationUtil.prepareStreamEnv();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-
         // 1. 执行上面的 DDL 字符串
         tEnv.executeSql(agRtsnSrc);
         tEnv.executeSql(aaTrajSrc);
@@ -135,17 +151,22 @@ public class SimpleSimulationIntegration {
 
         String insertSql = """
                 INSERT INTO merged_flight
-                WITH
-                -- 1) 低频表先算 prev_sgt
-                ag_lag AS (
-                  SELECT
-                    sortie_number,
-                    satellite_guidance_time,
-                    message_sequence_number,
-                    LAG(satellite_guidance_time)
-                      OVER (PARTITION BY sortie_number ORDER BY message_sequence_number)
-                    AS prev_sgt
-                  FROM ag_rtsn_src
+                    WITH
+                    -- 1) 低频表先算 prev_sgt
+                    ag_lag AS (
+                    SELECT
+                      sortie_number,
+                      satellite_guidance_time,
+                      message_sequence_number,
+                      weapon_type,
+                      aircraft_ground_speed,
+                      target_distance,
+                      aircraft_latitude AS latitude,
+                      aircraft_longitude AS longitude,
+                      LAG(satellite_guidance_time)
+                        OVER (PARTITION BY sortie_number ORDER BY message_sequence_number)
+                      AS prev_sgt
+                    FROM ag_rtsn_src
                 ),
                 
                 -- 2) 再算 day_shift 和 event_ts
@@ -165,7 +186,7 @@ public class SimpleSimulationIntegration {
                       )
                     AS day_shift,
                     CAST(satellite_guidance_time AS TIMESTAMP(3))
-                      + INTERVAL '1' DAY *\s
+                      + INTERVAL '1' DAY *
                         SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
                           OVER (PARTITION BY sortie_number
                                 ORDER BY message_sequence_number
@@ -174,7 +195,9 @@ public class SimpleSimulationIntegration {
                     -- 保留其它低频字段：
                     weapon_type,
                     aircraft_ground_speed,
-                    target_distance
+                    target_distance,
+                    latitude,
+                    longitude
                   FROM ag_lag
                 ),
                 
@@ -184,6 +207,8 @@ public class SimpleSimulationIntegration {
                     sortie_number,
                     satellite_guidance_time,
                     message_sequence_number,
+                    longitude,
+                    latitude,
                     LAG(satellite_guidance_time)
                       OVER (PARTITION BY sortie_number ORDER BY message_sequence_number)
                     AS prev_sgt
@@ -211,7 +236,7 @@ public class SimpleSimulationIntegration {
                                 ORDER BY message_sequence_number
                                 ROWS UNBOUNDED PRECEDING)
                     AS event_ts,
-                    -- 高频只保留要用到的列，其他同名字段会被丢弃或重命名：
+                    -- 高频只保留要用到的列：
                     longitude,
                     latitude
                   FROM aa_lag
