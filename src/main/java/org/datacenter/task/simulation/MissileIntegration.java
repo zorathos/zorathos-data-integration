@@ -100,14 +100,6 @@ public class MissileIntegration {
 
         tEnv.executeSql(missileMerge);
 
-        // 确认表已创建
-        try {
-            tEnv.executeSql("DESCRIBE missile_integration").print();
-        } catch (Exception e) {
-            log.error("无法描述missile_integration表: {}", e.getMessage());
-            throw e;
-        }
-
         String insertSql = """
                 INSERT INTO missile_integration
                 WITH
