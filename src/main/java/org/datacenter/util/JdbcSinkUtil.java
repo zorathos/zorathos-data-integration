@@ -36,6 +36,10 @@ public class JdbcSinkUtil {
             HumanMachineConfig.getProperty(TIDB_URL_PREFIX) +
                     TiDBDatabase.SIMULATION.getName() + HumanMachineConfig.getProperty(TIDB_URL_SUFFIX);
 
+    public static final String TIDB_URL_SIMULATION_INTEGRATION =
+            HumanMachineConfig.getProperty(TIDB_URL_PREFIX) +
+                    TiDBDatabase.SIMULATION_INTEGRATION.getName() + HumanMachineConfig.getProperty(TIDB_URL_SUFFIX);
+
     public static final String TIDB_URL_SORTIES =
             HumanMachineConfig.getProperty(TIDB_URL_PREFIX) +
                     TiDBDatabase.SORTIES.getName() + HumanMachineConfig.getProperty(TIDB_URL_SUFFIX);
