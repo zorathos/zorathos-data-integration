@@ -1,7 +1,6 @@
 ## zorathos-data-integration
 
-zorathos-data-receiver是中台的数据接收器，基于zorathos-data-model构建
-data-receiver-human-machine
+zorathos-data-integration是中台的数据整合器，基于zorathos-data-model构建，是一个单module项目，为翔腾子项目服务
 
 ### 运行指南
 TBD
