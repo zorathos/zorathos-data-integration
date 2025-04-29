@@ -51,7 +51,7 @@ public class DataIntegrationUtil {
         log.info("Preparing flink execution environment.");
         // 创建配置
         Configuration configuration = new Configuration();
-
+        configuration.setLong("table.exec.query-timeout", 180000); // 30分钟
         configuration.set(CheckpointingOptions.CHECKPOINTING_INTERVAL,
                 Duration.ofSeconds(Long.parseLong(HumanMachineConfig.getProperty(FLINK_CHECKPOINT_INTERVAL))));
         configuration.set(CheckpointingOptions.CHECKPOINTING_CONSISTENCY_MODE,
@@ -60,6 +60,7 @@ public class DataIntegrationUtil {
                 Duration.ofSeconds(Long.parseLong(HumanMachineConfig.getProperty(FLINK_CHECKPOINT_TIMEOUT))));
         configuration.set(CheckpointingOptions.EXTERNALIZED_CHECKPOINT_RETENTION,
                 ExternalizedCheckpointRetention.RETAIN_ON_CANCELLATION);
+        configuration.setString("taskmanager.memory.process.size", "8192m");
 
         // 开启非对齐检查点
         configuration.set(CheckpointingOptions.ENABLE_UNALIGNED, true);
