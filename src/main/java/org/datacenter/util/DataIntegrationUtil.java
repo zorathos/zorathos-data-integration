@@ -9,6 +9,7 @@ import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ExternalizedCheckpointRetention;
+import org.apache.flink.configuration.TaskManagerOptions;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
@@ -51,7 +52,6 @@ public class DataIntegrationUtil {
         log.info("Preparing flink execution environment.");
         // 创建配置
         Configuration configuration = new Configuration();
-        configuration.setLong("table.exec.query-timeout", 180000); // 30分钟
         configuration.set(CheckpointingOptions.CHECKPOINTING_INTERVAL,
                 Duration.ofSeconds(Long.parseLong(HumanMachineConfig.getProperty(FLINK_CHECKPOINT_INTERVAL))));
         configuration.set(CheckpointingOptions.CHECKPOINTING_CONSISTENCY_MODE,
@@ -60,7 +60,7 @@ public class DataIntegrationUtil {
                 Duration.ofSeconds(Long.parseLong(HumanMachineConfig.getProperty(FLINK_CHECKPOINT_TIMEOUT))));
         configuration.set(CheckpointingOptions.EXTERNALIZED_CHECKPOINT_RETENTION,
                 ExternalizedCheckpointRetention.RETAIN_ON_CANCELLATION);
-        configuration.setString("taskmanager.memory.process.size", "8192m");
+        configuration.setString("taskmanager.memory.task.heap.size", "8192m");
 
         // 开启非对齐检查点
         configuration.set(CheckpointingOptions.ENABLE_UNALIGNED, true);

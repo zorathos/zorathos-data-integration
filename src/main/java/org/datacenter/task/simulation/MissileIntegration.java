@@ -99,7 +99,7 @@ public class MissileIntegration {
         
             -- AG_RTSN处理
             ag_rtsn_lag AS (
-                SELECT 
+                SELECT
                     sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
                     message_sequence_number, weapon_id, weapon_pylon_id AS pylon_id, weapon_type,
                     number_of_missiles_released, aircraft_ground_speed, aircraft_longitude AS longitude, 
