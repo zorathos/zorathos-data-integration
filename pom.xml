@@ -295,6 +295,10 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <bootclasspath>${java.home}/lib/jrt-fs.jar</bootclasspath>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 

@@ -15,6 +15,7 @@ TBD
 --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED 
 --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED 
 --add-exports=jdk.compiler/com.sun.tools.javac.pa.javac.tree=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED 
 --add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED 
 --add-opens=java.base/java.lang=ALL-UNNAMED 

@@ -9,6 +9,7 @@ import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ExternalizedCheckpointRetention;
+import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.configuration.TaskManagerOptions;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
@@ -60,15 +61,15 @@ public class DataIntegrationUtil {
                 Duration.ofSeconds(Long.parseLong(HumanMachineConfig.getProperty(FLINK_CHECKPOINT_TIMEOUT))));
         configuration.set(CheckpointingOptions.EXTERNALIZED_CHECKPOINT_RETENTION,
                 ExternalizedCheckpointRetention.RETAIN_ON_CANCELLATION);
-        configuration.setString("taskmanager.memory.task.heap.size", "8192m");
-
+        configuration.set(TaskManagerOptions.TASK_HEAP_MEMORY, MemorySize.parse("4gb"));
+        configuration.set(TaskManagerOptions.TASK_OFF_HEAP_MEMORY, MemorySize.parse("1gb"));
+        configuration.set(TaskManagerOptions.NETWORK_MEMORY_MIN, MemorySize.parse("256mb"));
         // 开启非对齐检查点
         configuration.set(CheckpointingOptions.ENABLE_UNALIGNED, true);
         configuration.set(CheckpointingOptions.ALIGNED_CHECKPOINT_TIMEOUT,
                 Duration.ofSeconds(120));
 
         // 根据配置创建环境
-
         return StreamExecutionEnvironment.getExecutionEnvironment(configuration);
     }
 
