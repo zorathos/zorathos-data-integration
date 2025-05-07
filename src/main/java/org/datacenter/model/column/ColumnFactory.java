@@ -23,7 +23,7 @@ import java.util.Map;
 public class ColumnFactory {
     private static final Map<TiDBTable, BaseColumn> COLUMN_CACHE = new EnumMap<>(TiDBTable.class);
 
-    public static BaseColumn getColumn(TiDBTable table) {
+    public static BaseColumn getMissileColumn(TiDBTable table) {
         return COLUMN_CACHE.computeIfAbsent(table, t -> switch (table) {
             case AA_TRAJ -> new AaTrajColumn();
             case AG_RTSN -> new AgRtsnColumn();

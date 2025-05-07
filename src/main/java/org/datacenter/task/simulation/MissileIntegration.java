@@ -15,6 +15,7 @@ import org.datacenter.model.base.TiDBDatabase;
 import org.datacenter.model.base.TiDBTable;
 import org.datacenter.model.column.BaseColumn;
 import org.datacenter.model.column.ColumnFactory;
+import org.datacenter.model.cte.missile.MissileTableCteCache;
 import org.datacenter.task.BaseIntegration;
 import org.datacenter.util.DataIntegrationUtil;
 import org.datacenter.util.MySQLDriverConnectionPool;
@@ -103,273 +104,14 @@ public class MissileIntegration extends BaseIntegration {
      * 生成 <table>_lag CTE
      */
     private String generateLagCte(TiDBTable table, String sortie) {
-        return switch (table) {
-            case AA_TRAJ -> String.format("""
-                    aa_traj_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type, target_id,
-                             longitude, latitude, altitude, missile_target_distance, missile_speed,
-                             interception_status, non_interception_reason, seeker_azimuth, seeker_elevation,
-                             target_tspi_status, command_machine_status, ground_angle_satisfaction_flag, zero_crossing_flag,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`aa_traj`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case AG_RTSN -> String.format("""
-                    ag_rtsn_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_pylon_id AS pylon_id, weapon_type,
-                             number_of_missiles_released, aircraft_ground_speed, aircraft_longitude AS longitude,
-                             aircraft_latitude AS latitude, aircraft_altitude AS altitude, aircraft_heading AS heading,
-                             aircraft_pitch AS pitch, aircraft_roll AS roll, aircraft_angle_of_attack,
-                             aircraft_north_speed, aircraft_vertical_speed, aircraft_east_speed,
-                             north_wind_speed, vertical_wind_speed, east_wind_speed,
-                             target_longitude, target_latitude, target_altitude, target_distance,
-                             seeker_head_number, target_coordinate_validity, target_azimuth_elevation_validity,
-                             target_elevation_angle, target_azimuth_angle, impact_angle_validity, entry_angle,
-                             impact_angle, direction_validity,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`ag_rtsn`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case AG_TRAJ -> String.format("""
-                    ag_traj_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_type, longitude, latitude, altitude,
-                             heading, pitch, north_speed, sky_speed, east_speed, seeker_id, interception_flag,
-                             termination_flag, intercepting_member_id, intercepting_equipment_id,
-                             intercepting_equipment_type, launcher_id, seeker_azimuth_center, seeker_pitch_center,
-                             target_id, missile_target_distance,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`ag_traj`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case IR_MSL -> String.format("""
-                    ir_msl_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, seeker_azimuth, seeker_elevation, weapon_type, interception_flag,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`ir_msl`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case PL17_RTKN -> String.format("""
-                    pl17_rtkn_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_type, target_id, target_real_or_virtual,
-                             hit_result, miss_reason, miss_distance, matching_failure_reason, jamming_effective,
-                             jamming, afterburner, head_on, heading, pitch,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`pl17_rtkn`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case PL17_RTSN -> String.format("""
-                    pl17_rtsn_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, target_id, intercepted_weapon_id, target_real_or_virtual,
-                             weapon_id, pylon_id, weapon_type, trajectory_type, missile_attack_mode,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`pl17_rtsn`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case PL17_TRAJ -> String.format("""
-                    pl17_traj_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type, target_id,
-                             longitude, latitude, altitude, missile_target_distance, missile_speed,
-                             interception_status, non_interception_reason, seeker_azimuth, seeker_elevation,
-                             target_tspi_status, command_machine_status, ground_angle_satisfaction_flag,
-                             zero_crossing_flag, distance_interception_flag, speed_interception_flag, angle_interception_flag,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`pl17_traj`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case RTSN -> String.format("""
-                    rtsn_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, target_id, intercepted_weapon_id, target_real_or_virtual,
-                             weapon_id, pylon_id, weapon_type, trajectory_type, missile_attack_mode,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`rtsn`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case RTKN -> String.format("""
-                    rtkn_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_type, target_id, intercepted_weapon_id,
-                             hit_result, miss_reason, miss_distance, matching_failure_reason,
-                             ground_defense_equipment_type, ground_defense_equipment_id,
-                             ground_defense_equipment_type1, ground_defense_equipment_id1,
-                             ground_defense_equipment_type2, ground_defense_equipment_id2,
-                             ground_defense_equipment_type3, ground_defense_equipment_id3,
-                             jamming_effective, jamming, afterburner, head_on, heading, pitch,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`rtkn`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            case SA_TRAJ -> String.format("""
-                    sa_traj_lag AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type, target_id,
-                             intercepted_weapon_id, longitude, latitude, altitude, missile_target_distance,
-                             missile_speed, interception_status, non_interception_reason, seeker_azimuth,
-                             seeker_elevation, target_tspi_status, command_machine_status,
-                             LAG(satellite_guidance_time) OVER (PARTITION BY sortie_number ORDER BY message_sequence_number) AS prev_sgt
-                      FROM `tidb_catalog`.`simulation`.`sa_traj`
-                      WHERE sortie_number = '%s'
-                    )""", sortie);
-            default -> throw new IllegalArgumentException("Unknown table: " + table);
-        };
+        return MissileTableCteCache.CTE_CACHE.get(table).getLagCteTemplate().formatted(sortie);
     }
 
     /**
      * 生成 <table>_processed CTE
      */
     private String generateProcessedCte(TiDBTable table) {
-        return switch (table) {
-            case AA_TRAJ -> """
-                    aa_traj_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type, target_id,
-                             longitude, latitude, altitude, missile_target_distance, missile_speed,
-                             interception_status, non_interception_reason, seeker_azimuth, seeker_elevation,
-                             target_tspi_status, command_machine_status, ground_angle_satisfaction_flag, zero_crossing_flag,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'aa_traj' AS source_table
-                      FROM aa_traj_lag
-                    )""";
-            case AG_RTSN -> """
-                    ag_rtsn_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type,
-                             number_of_missiles_released, aircraft_ground_speed, longitude,
-                             latitude, altitude, heading, pitch, roll, aircraft_angle_of_attack,
-                             aircraft_north_speed, aircraft_vertical_speed, aircraft_east_speed,
-                             north_wind_speed, vertical_wind_speed, east_wind_speed,
-                             target_longitude, target_latitude, target_altitude, target_distance,
-                             seeker_head_number, target_coordinate_validity, target_azimuth_elevation_validity,
-                             target_elevation_angle, target_azimuth_angle, impact_angle_validity, entry_angle,
-                             impact_angle, direction_validity,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'ag_rtsn' AS source_table
-                      FROM ag_rtsn_lag
-                    )""";
-            case AG_TRAJ -> """
-                    ag_traj_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_type, longitude, latitude, altitude,
-                             heading, pitch, north_speed, sky_speed, east_speed, seeker_id, interception_flag,
-                             termination_flag, intercepting_member_id, intercepting_equipment_id,
-                             intercepting_equipment_type, launcher_id, seeker_azimuth_center, seeker_pitch_center,
-                             target_id, missile_target_distance,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'ag_traj' AS source_table
-                      FROM ag_traj_lag
-                    )""";
-            case IR_MSL -> """
-                    ir_msl_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, seeker_azimuth, seeker_elevation, weapon_type, interception_flag,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'ir_msl' AS source_table
-                      FROM ir_msl_lag
-                    )""";
-            case PL17_RTKN -> """
-                    pl17_rtkn_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_type, target_id, target_real_or_virtual,
-                             hit_result, miss_reason, miss_distance, matching_failure_reason, jamming_effective,
-                             jamming, afterburner, head_on, heading, pitch,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'pl17_rtkn' AS source_table
-                      FROM pl17_rtkn_lag
-                    )""";
-            case PL17_RTSN -> """
-                    pl17_rtsn_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, target_id, intercepted_weapon_id, target_real_or_virtual,
-                             weapon_id, pylon_id, weapon_type, trajectory_type, missile_attack_mode,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'pl17_rtsn' AS source_table
-                      FROM pl17_rtsn_lag
-                    )""";
-            case PL17_TRAJ -> """
-                    pl17_traj_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type, target_id,
-                             longitude, latitude, altitude, missile_target_distance, missile_speed,
-                             interception_status, non_interception_reason, seeker_azimuth, seeker_elevation,
-                             target_tspi_status, command_machine_status, ground_angle_satisfaction_flag,
-                             zero_crossing_flag, distance_interception_flag, speed_interception_flag, angle_interception_flag,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'pl17_traj' AS source_table
-                      FROM pl17_traj_lag
-                    )""";
-            case RTSN -> """
-                    rtsn_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, target_id, intercepted_weapon_id, target_real_or_virtual,
-                             weapon_id, pylon_id, weapon_type, trajectory_type, missile_attack_mode,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'rtsn' AS source_table
-                      FROM rtsn_lag
-                    )""";
-            case RTKN -> """
-                    rtkn_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, weapon_type, target_id, intercepted_weapon_id,
-                             hit_result, miss_reason, miss_distance, matching_failure_reason,
-                             ground_defense_equipment_type, ground_defense_equipment_id,
-                             ground_defense_equipment_type1, ground_defense_equipment_id1,
-                             ground_defense_equipment_type2, ground_defense_equipment_id2,
-                             ground_defense_equipment_type3, ground_defense_equipment_id3,
-                             jamming_effective, jamming, afterburner, head_on, heading, pitch,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'rtkn' AS source_table
-                      FROM rtkn_lag
-                    )""";
-            case SA_TRAJ -> """
-                    sa_traj_processed AS (
-                      SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
-                             message_sequence_number, weapon_id, pylon_id, weapon_type, target_id,
-                             intercepted_weapon_id, longitude, latitude, altitude, missile_target_distance,
-                             missile_speed, interception_status, non_interception_reason, seeker_azimuth,
-                             seeker_elevation, target_tspi_status, command_machine_status,
-                             CAST(satellite_guidance_time AS TIMESTAMP(3)) +
-                             INTERVAL '1' DAY * SUM(CASE WHEN satellite_guidance_time < prev_sgt THEN 1 ELSE 0 END)
-                               OVER (PARTITION BY sortie_number ORDER BY message_sequence_number ROWS UNBOUNDED PRECEDING)
-                             AS event_ts,
-                             'sa_traj' AS source_table
-                      FROM sa_traj_lag
-                    )""";
-            default -> throw new IllegalArgumentException("Unknown table: " + table);
-        };
+        return MissileTableCteCache.CTE_CACHE.get(table).getProcessedCteTemplate();
     }
 
     @Override
@@ -423,7 +165,7 @@ public class MissileIntegration extends BaseIntegration {
         // 6. 根据最小行数选择主表
         TiDBTable mainTable = tableCounts.entrySet().stream()
                 .min(Map.Entry.comparingByValue())
-                .get()
+                .orElseThrow(() -> new ZorathosException("Unable to confirm main table, all tables are empty."))
                 .getKey();
         log.info("Chosen main table: {}", mainTable.getName());
 
@@ -433,15 +175,13 @@ public class MissileIntegration extends BaseIntegration {
         for (TiDBTable tiDBTable : tablesWithData) {
             withClause
                     .append(generateLagCte(tiDBTable, sortieNumber))
-                    .append(",\n")
-                    .append(generateProcessedCte(tiDBTable))
-                    .append(",\n");
+                    .append(generateProcessedCte(tiDBTable));
         }
 
         // 8. 构造 joined_data CTE：以主表为基准按 event_ts ±1s 左关联其它表
         // 8.1 构建select语句
         Map<String, List<String>> columnTableMap = new HashMap<>();
-        BaseColumn mainTableColumn = ColumnFactory.getColumn(mainTable);
+        BaseColumn mainTableColumn = ColumnFactory.getMissileColumn(mainTable);
         mainTableColumn.getColumns().forEach(column -> {
             List<String> tableList = new ArrayList<>();
             tableList.add(mainTable.getName() + "_processed");
@@ -451,7 +191,7 @@ public class MissileIntegration extends BaseIntegration {
         // 添加所有非主表的列
         for (TiDBTable otherTable : tablesWithData) {
             if (!otherTable.equals(mainTable)) {
-                BaseColumn baseColumnForTable = ColumnFactory.getColumn(otherTable);
+                BaseColumn baseColumnForTable = ColumnFactory.getMissileColumn(otherTable);
                 for (String column : baseColumnForTable.getColumns()) {
                     if (columnTableMap.containsKey(column)) {
                         // 已经有同名的列了
