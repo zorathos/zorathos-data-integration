@@ -12,6 +12,7 @@ import org.datacenter.model.IntegrationType;
 import org.datacenter.model.base.TiDBTable;
 import org.datacenter.task.BaseIntegration;
 import org.datacenter.util.DataIntegrationUtil;
+import org.datacenter.util.SimulationIntegrationUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class PlaneStateIntegration extends BaseIntegration {
         );
 
         // 5. 统计每张表在本次 sortie 的数据量，仅保留 count > 0
-        Map<TiDBTable, Long> tableCounts = DataIntegrationUtil.getTableCounts(allPlaneStateTables, config.getSortieNumber());
+        Map<TiDBTable, Long> tableCounts = SimulationIntegrationUtil.getTableCounts(allPlaneStateTables, config.getSortieNumber());
 
         if (tableCounts.isEmpty()) {
             log.warn("No data found for sortie {}", config.getSortieNumber());
@@ -57,7 +58,7 @@ public class PlaneStateIntegration extends BaseIntegration {
                 .getKey();
         log.info("Chosen main table: {}", mainTable.getName());
 
-        StringBuilder withClause = DataIntegrationUtil.generateWithClause(IntegrationType.SIMULATION_PLANE_STATE, tableCounts, mainTable, config.getSortieNumber());
+        StringBuilder withClause = SimulationIntegrationUtil.generateWithClause(IntegrationType.SIMULATION_PLANE_STATE, tableCounts, mainTable, config.getSortieNumber());
         // 9. 最终 INSERT
         String finalSql =
                 "INSERT INTO `tidb_catalog`.`simulation_integration`.`plane_state_integration`\n"
