@@ -78,6 +78,55 @@ create table simulation_integration.missile_integration
     ground_defense_equipment_id    varchar(50)  null comment '地导装备ID',
     source_table                   varchar(50)  null comment '数据来源表',
     primary key (sortie_number, event_ts)
-)
-    comment '导弹数据整合表' partition by key (`sortie_number`) partitions 8;
+) comment '导弹数据整合表' partition by key (`sortie_number`) partitions 1;
 
+CREATE TABLE simulation_integration.plane_state_integration
+(
+    sortie_number            VARCHAR(50)  NOT NULL COMMENT '架次号',
+    event_ts                 TIMESTAMP(3) NOT NULL COMMENT '事件时间戳',
+    aircraft_id              VARCHAR(50)  NULL COMMENT '飞机ID',
+    aircraft_type            VARCHAR(50)  NULL COMMENT '飞机类型',
+    message_time             TIME(3)      NULL COMMENT '消息时间',
+    satellite_guidance_time  TIME(3)      NULL COMMENT '卫导时间',
+    local_time               TIME(3)      NULL COMMENT '本地时间',
+    message_sequence_number  BIGINT       NULL COMMENT '消息序列号',
+    -- 位置和姿态数据
+    longitude                VARCHAR(50)  NULL COMMENT '经度',
+    latitude                 VARCHAR(50)  NULL COMMENT '纬度',
+    pressure_altitude        VARCHAR(50)  NULL COMMENT '气压高度',
+    satellite_altitude       VARCHAR(50)  NULL COMMENT '卫星高度',
+    roll                     VARCHAR(50)  NULL COMMENT '横滚',
+    pitch                    VARCHAR(50)  NULL COMMENT '俯仰',
+    heading                  VARCHAR(50)  NULL COMMENT '航向',
+    -- 速度数据
+    north_velocity           VARCHAR(50)  NULL COMMENT '北向速度',
+    vertical_velocity        VARCHAR(50)  NULL COMMENT '天向速度',
+    east_velocity            VARCHAR(50)  NULL COMMENT '东向速度',
+    indicated_airspeed       VARCHAR(50)  NULL COMMENT '表速(km/h)',
+    -- 飞行状态数据
+    true_angle_of_attack     VARCHAR(50)  NULL COMMENT '真攻角',
+    mach_number              VARCHAR(50)  NULL COMMENT '马赫数',
+    normal_load_factor       VARCHAR(50)  NULL COMMENT '法向过载',
+    field_elevation          VARCHAR(50)  NULL COMMENT '场高',
+    radio_altitude           VARCHAR(50)  NULL COMMENT '无线电高度',
+    remaining_fuel           VARCHAR(50)  NULL COMMENT '余油量',
+    -- 训练/演习状态
+    training_status          VARCHAR(50)  NULL COMMENT '训练状态',
+    scenario                 VARCHAR(50)  NULL COMMENT '场景',
+    manual_respawn           VARCHAR(50)  NULL COMMENT '手动复活',
+    parameter_setting_status VARCHAR(50)  NULL COMMENT '参数设置状态',
+    encryption_status        VARCHAR(50)  NULL COMMENT '加密状态',
+    -- 对抗措施
+    chaff                    VARCHAR(50)  NULL COMMENT '干扰弹',
+    afterburner              VARCHAR(50)  NULL COMMENT '加力',
+    -- 命令相关
+    command_type             VARCHAR(50)  NULL COMMENT '导调/导调回复',
+    command_id               VARCHAR(50)  NULL COMMENT '命令ID',
+    command_content          VARCHAR(50)  NULL COMMENT '命令内容',
+    response_sequence_number BIGINT       NULL COMMENT '回复序列号',
+    -- 其他状态
+    delay_status             VARCHAR(50)  NULL COMMENT '延迟状态',
+    -- 来源信息
+    source_table             VARCHAR(50)  NULL COMMENT '数据来源表',
+    PRIMARY KEY (sortie_number, event_ts)
+) COMMENT = '飞机状态整合表' PARTITION BY KEY (`sortie_number`) PARTITIONS 1;

@@ -1,4 +1,4 @@
-package org.datacenter.model.column.missile;
+package org.datacenter.model.column.simulation.missile;
 
 import lombok.Builder;
 import lombok.Data;

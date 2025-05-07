@@ -1,4 +1,4 @@
-package org.datacenter.model.column.missile;
+package org.datacenter.model.column.simulation.missile;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,18 +10,18 @@ import java.util.ArrayList;
 
 /**
  * @author : [wangminan]
- * @description : aaTraj的列
+ * @description : AG_TRAJ的列
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class AaTrajColumn extends BaseColumn {
-    public AaTrajColumn() {
-        this.table = TiDBTable.AA_TRAJ;
+public class AgTrajColumn extends BaseColumn {
+    public AgTrajColumn() {
+        this.table = TiDBTable.AG_TRAJ;
         this.columns = new ArrayList<>();
+
         // 基础字段
         columns.add("sortie_number");
-        columns.add("event_ts");
         columns.add("aircraft_id");
         columns.add("message_time");
         columns.add("satellite_guidance_time");
@@ -30,31 +30,34 @@ public class AaTrajColumn extends BaseColumn {
         columns.add("weapon_id");
         columns.add("weapon_type");
         columns.add("target_id");
-        columns.add("pylon_id");
 
         // 位置相关字段
         columns.add("longitude");
         columns.add("latitude");
         columns.add("altitude");
+        columns.add("heading");
+        columns.add("pitch");
 
         // 速度相关字段
-        columns.add("missile_speed");
+        columns.add("north_speed");
+        columns.add("sky_speed");
+        columns.add("east_speed");
+
+        // 导引头相关字段
+        columns.add("seeker_id");
+        columns.add("seeker_azimuth_center");
+        columns.add("seeker_pitch_center");
+
+        // 截获相关字段
+        columns.add("interception_flag");
+        columns.add("termination_flag");
+        columns.add("intercepting_member_id");
+        columns.add("intercepting_equipment_id");
+        columns.add("intercepting_equipment_type");
+        columns.add("launcher_id");
 
         // 目标相关字段
         columns.add("missile_target_distance");
-        columns.add("target_tspi_status");
-
-        // 导引头相关字段
-        columns.add("seeker_azimuth");
-        columns.add("seeker_elevation");
-
-        // 截获/命中相关字段
-        columns.add("interception_status");
-        columns.add("non_interception_reason");
-
-        // 其他状态和标志
-        columns.add("command_machine_status");
-        columns.add("ground_angle_satisfaction_flag");
-        columns.add("zero_crossing_flag");
+        columns.add("event_ts");
     }
 }

@@ -1,21 +1,17 @@
-package org.datacenter.model.cte.missile;
+package org.datacenter.model.cte.simulation.missile;
 
 import org.datacenter.model.base.TiDBTable;
 import org.datacenter.model.cte.TableCteDefinition;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.datacenter.model.cte.simulation.BaseCteCache;
 
 /**
  * @author : [wangminan]
  * @description : 表CTE模板缓存
  */
-public class MissileTableCteCache {
-    public static final Map<TiDBTable, TableCteDefinition> CTE_CACHE = new HashMap<>();
-
-    static {
+public class MissileTableCteCache extends BaseCteCache {
+    public MissileTableCteCache() {
         // 初始化缓存
-        CTE_CACHE.put(TiDBTable.AA_TRAJ, new TableCteDefinition(
+        cteCache.put(TiDBTable.AA_TRAJ, new TableCteDefinition(
                 """
                         aa_traj_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -44,7 +40,7 @@ public class MissileTableCteCache {
                         ),
                         """
         ));
-        CTE_CACHE.put(TiDBTable.AG_RTSN, new TableCteDefinition(
+        cteCache.put(TiDBTable.AG_RTSN, new TableCteDefinition(
                 """
                         ag_rtsn_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -85,7 +81,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.AG_TRAJ, new TableCteDefinition(
+        cteCache.put(TiDBTable.AG_TRAJ, new TableCteDefinition(
                 """
                         ag_traj_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -117,7 +113,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.IR_MSL, new TableCteDefinition(
+        cteCache.put(TiDBTable.IR_MSL, new TableCteDefinition(
                 """
                         ir_msl_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -141,7 +137,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.PL17_RTKN, new TableCteDefinition(
+        cteCache.put(TiDBTable.PL17_RTKN, new TableCteDefinition(
                 """
                         pl17_rtkn_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -169,7 +165,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.PL17_RTSN, new TableCteDefinition(
+        cteCache.put(TiDBTable.PL17_RTSN, new TableCteDefinition(
                 """
                         pl17_rtsn_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -195,7 +191,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.PL17_TRAJ, new TableCteDefinition(
+        cteCache.put(TiDBTable.PL17_TRAJ, new TableCteDefinition(
                 """
                         pl17_traj_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -227,7 +223,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.RTSN, new TableCteDefinition(
+        cteCache.put(TiDBTable.RTSN, new TableCteDefinition(
                 """
                         rtsn_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -253,7 +249,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.RTKN, new TableCteDefinition(
+        cteCache.put(TiDBTable.RTKN, new TableCteDefinition(
                 """
                         rtkn_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,
@@ -289,7 +285,7 @@ public class MissileTableCteCache {
                         """
         ));
 
-        CTE_CACHE.put(TiDBTable.SA_TRAJ, new TableCteDefinition(
+        cteCache.put(TiDBTable.SA_TRAJ, new TableCteDefinition(
                 """
                         sa_traj_lag AS (
                         SELECT sortie_number, aircraft_id, message_time, satellite_guidance_time, local_time,

@@ -2,16 +2,16 @@ package org.datacenter.model.column;
 
 import org.datacenter.exception.ZorathosException;
 import org.datacenter.model.base.TiDBTable;
-import org.datacenter.model.column.missile.AaTrajColumn;
-import org.datacenter.model.column.missile.AgRtsnColumn;
-import org.datacenter.model.column.missile.AgTrajColumn;
-import org.datacenter.model.column.missile.IrMslColumn;
-import org.datacenter.model.column.missile.Pl17RtknColumn;
-import org.datacenter.model.column.missile.Pl17RtsnColumn;
-import org.datacenter.model.column.missile.Pl17TrajColumn;
-import org.datacenter.model.column.missile.RtknColumn;
-import org.datacenter.model.column.missile.RtsnColumn;
-import org.datacenter.model.column.missile.SaTrajColumn;
+import org.datacenter.model.column.simulation.missile.AaTrajColumn;
+import org.datacenter.model.column.simulation.missile.AgRtsnColumn;
+import org.datacenter.model.column.simulation.missile.AgTrajColumn;
+import org.datacenter.model.column.simulation.missile.IrMslColumn;
+import org.datacenter.model.column.simulation.missile.Pl17RtknColumn;
+import org.datacenter.model.column.simulation.missile.Pl17RtsnColumn;
+import org.datacenter.model.column.simulation.missile.Pl17TrajColumn;
+import org.datacenter.model.column.simulation.missile.RtknColumn;
+import org.datacenter.model.column.simulation.missile.RtsnColumn;
+import org.datacenter.model.column.simulation.missile.SaTrajColumn;
 
 import java.util.EnumMap;
 import java.util.Map;

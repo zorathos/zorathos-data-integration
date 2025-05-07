@@ -1,4 +1,4 @@
-package org.datacenter.model.column.missile;
+package org.datacenter.model.column.simulation.missile;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,14 +10,14 @@ import java.util.ArrayList;
 
 /**
  * @author : [wangminan]
- * @description : PL17_RTSN的列
+ * @description : IR_MSL的列
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class Pl17RtsnColumn extends BaseColumn {
-    public Pl17RtsnColumn() {
-        this.table = TiDBTable.PL17_RTSN;
+public class IrMslColumn extends BaseColumn {
+    public IrMslColumn() {
+        this.table = TiDBTable.IR_MSL;
         this.columns = new ArrayList<>();
 
         // 基础字段
@@ -27,17 +27,14 @@ public class Pl17RtsnColumn extends BaseColumn {
         columns.add("satellite_guidance_time");
         columns.add("local_time");
         columns.add("message_sequence_number");
-        columns.add("target_id");
-        columns.add("intercepted_weapon_id");
-        columns.add("target_real_or_virtual");
-        columns.add("weapon_id");
-        columns.add("pylon_id");
         columns.add("weapon_type");
 
-        // 轨迹相关字段
-        columns.add("trajectory_type");
-        columns.add("missile_attack_mode");
+        // 导引头相关字段
+        columns.add("seeker_azimuth");
+        columns.add("seeker_elevation");
 
+        // 截获相关字段
+        columns.add("interception_flag");
         columns.add("event_ts");
     }
 }

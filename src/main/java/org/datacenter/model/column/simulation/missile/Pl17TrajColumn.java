@@ -1,4 +1,4 @@
-package org.datacenter.model.column.missile;
+package org.datacenter.model.column.simulation.missile;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,14 +10,14 @@ import java.util.ArrayList;
 
 /**
  * @author : [wangminan]
- * @description : SA_TRAJ的列
+ * @description : PL17_TRAJ的列
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class SaTrajColumn extends BaseColumn {
-    public SaTrajColumn() {
-        this.table = TiDBTable.SA_TRAJ;
+public class Pl17TrajColumn extends BaseColumn {
+    public Pl17TrajColumn() {
+        this.table = TiDBTable.PL17_TRAJ;
         this.columns = new ArrayList<>();
 
         // 基础字段
@@ -28,9 +28,9 @@ public class SaTrajColumn extends BaseColumn {
         columns.add("local_time");
         columns.add("message_sequence_number");
         columns.add("weapon_id");
+        columns.add("pylon_id");
         columns.add("weapon_type");
         columns.add("target_id");
-        columns.add("pylon_id");
 
         // 位置相关字段
         columns.add("longitude");
@@ -40,7 +40,6 @@ public class SaTrajColumn extends BaseColumn {
         // 目标相关字段
         columns.add("missile_target_distance");
         columns.add("missile_speed");
-        columns.add("intercepted_weapon_id");
 
         // 状态相关字段
         columns.add("interception_status");
@@ -49,6 +48,13 @@ public class SaTrajColumn extends BaseColumn {
         columns.add("seeker_elevation");
         columns.add("target_tspi_status");
         columns.add("command_machine_status");
+        columns.add("ground_angle_satisfaction_flag");
+        columns.add("zero_crossing_flag");
+
+        // 截获标志
+        columns.add("distance_interception_flag");
+        columns.add("speed_interception_flag");
+        columns.add("angle_interception_flag");
 
         columns.add("event_ts");
     }
