@@ -10,6 +10,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ExternalizedCheckpointRetention;
 import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.configuration.TaskManagerOptions;
+import org.apache.flink.connector.jdbc.catalog.JdbcCatalog;
 import org.apache.flink.core.execution.CheckpointingMode;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
@@ -64,14 +65,10 @@ public class DataIntegrationUtil {
                 Duration.ofSeconds(Long.parseLong(HumanMachineConfig.getProperty(FLINK_CHECKPOINT_TIMEOUT))));
         configuration.set(CheckpointingOptions.EXTERNALIZED_CHECKPOINT_RETENTION,
                 ExternalizedCheckpointRetention.RETAIN_ON_CANCELLATION);
-        configuration.set(TaskManagerOptions.TASK_HEAP_MEMORY, MemorySize.parse("4gb"));
-        configuration.set(TaskManagerOptions.TASK_OFF_HEAP_MEMORY, MemorySize.parse("1gb"));
-        configuration.set(TaskManagerOptions.NETWORK_MEMORY_MIN, MemorySize.parse("256mb"));
         // 开启非对齐检查点
         configuration.set(CheckpointingOptions.ENABLE_UNALIGNED, true);
         configuration.set(CheckpointingOptions.ALIGNED_CHECKPOINT_TIMEOUT,
                 Duration.ofSeconds(120));
-
         // 根据配置创建环境
         return StreamExecutionEnvironment.getExecutionEnvironment(configuration);
     }
@@ -85,21 +82,21 @@ public class DataIntegrationUtil {
     }
 
     public static void createTiDBCatalog(StreamTableEnvironment tEnv) {
-        tEnv.executeSql(String.format(
-                """
-                        CREATE CATALOG tidb_catalog WITH (
-                          'type' = 'jdbc',
-                          'default-database' = '%s',
-                          'username' = '%s',
-                          'password' = '%s',
-                          'base-url' = '%s'
-                        )
-                        """,
+        // 需要先加载驱动
+        try {
+            Class.forName(HumanMachineConfig.getProperty(TIDB_MYSQL_DRIVER_NAME));
+        } catch (ClassNotFoundException e) {
+            throw new ZorathosException("TiDB JDBC driver not found.");
+        }
+        // 用JdbcCatalog直接实例化 用SQL会报错
+        JdbcCatalog catalog = new JdbcCatalog(
+                "tidb_catalog",
                 TiDBDatabase.SIMULATION.getName(),
                 HumanMachineConfig.getProperty(HumanMachineSysConfigKey.TIDB_USERNAME),
                 HumanMachineConfig.getProperty(HumanMachineSysConfigKey.TIDB_PASSWORD),
                 HumanMachineConfig.getProperty(HumanMachineSysConfigKey.TIDB_URL_PREFIX)
-        ));
+        );
+        tEnv.registerCatalog("tidb_catalog", catalog);
         tEnv.executeSql("USE CATALOG tidb_catalog");
     }
 }
